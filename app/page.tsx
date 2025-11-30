@@ -23,15 +23,15 @@ import {
 
 // Main Slides Array
 const SLIDES_CONFIG = [
-  { id: "intro", component: IntroSlide, themeId: "aurora" },
-  { id: "stats", component: StatsSlide, themeId: "velvet" },
-  { id: "languages", component: LanguageSlide, themeId: "midnight" },
-  { id: "projects", component: ProjectSlide, themeId: "royal" },
-  { id: "activity", component: ActivitySlide, themeId: "aurora" },
-  { id: "workstyle", component: WorkStyleSlide, themeId: "midnight" },
-  { id: "timing", component: TimingSlide, themeId: "dawn" },
-  { id: "remarks", component: RemarksSlide, themeId: "aurora" },
-  { id: "summary", component: SummarySlide, themeId: "velvet" },
+  { id: "intro", component: IntroSlide, themeId: "obsidian" },
+  { id: "stats", component: StatsSlide, themeId: "tokyo" },
+  { id: "languages", component: LanguageSlide, themeId: "emerald" },
+  { id: "projects", component: ProjectSlide, themeId: "sunset" },
+  { id: "activity", component: ActivitySlide, themeId: "abyss" },
+  { id: "workstyle", component: WorkStyleSlide, themeId: "gilded" },
+  { id: "timing", component: TimingSlide, themeId: "sunset" },
+  { id: "remarks", component: RemarksSlide, themeId: "obsidian" },
+  { id: "summary", component: SummarySlide, themeId: "emerald" },
 ];
 
 export default function Home() {
