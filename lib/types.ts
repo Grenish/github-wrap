@@ -17,7 +17,6 @@ export interface Language {
   percent: number;
 }
 
-// Internal types for Heatmap logic
 export interface ContributionDay {
   contributionCount: number;
   date: string;
@@ -48,6 +47,7 @@ export interface WrappedData {
     stargazers_count?: number;
     primaryLanguage?: { name: string; color: string };
     language?: string;
+    forkCount?: number;
   }>;
   languages: Language[];
   analysis: {
@@ -69,6 +69,14 @@ export interface WrappedData {
     weekend: number;
     weekday: number;
   };
-  heatmap: Week[]; // This was missing causing TS 2353
+  mostProductiveDay: {
+    date: string;
+    count: number;
+  };
+  codeStats: {
+    additions: number;
+    deletions: number;
+  };
+  heatmap: Week[];
   isExact: boolean;
 }
