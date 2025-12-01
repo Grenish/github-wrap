@@ -1,7 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { PauseCircle, PlayCircle } from "lucide-react";
+import { Space_Grotesk } from "next/font/google";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+
 import { THEMES } from "@/lib/constants";
 import { WrappedData } from "@/lib/types";
 import { fetchGitHubData } from "@/lib/github";
@@ -9,29 +13,37 @@ import { fetchGitHubData } from "@/lib/github";
 import { Background } from "@/components/background";
 import { ProgressBar } from "@/components/progress-bar";
 import { LoginScreen } from "@/components/login-screen";
-import {
-  ActivitySlide,
-  IntroSlide,
-  LanguageSlide,
-  ProjectSlide,
-  RemarksSlide,
-  StatsSlide,
-  SummarySlide,
-  TimingSlide,
-  WorkStyleSlide,
-} from "@/components/slides";
 
-// Main Slides Array
+import { IntroSlide } from "@/components/slides/intro-slide";
+import { StatsSlide } from "@/components/slides/stats-slide";
+import { LanguageSlide } from "@/components/slides/language-slide";
+import { ProductiveDaySlide } from "@/components/slides/productive-day-slide";
+import { FunStatsSlide } from "@/components/slides/fun-stats-slide";
+import { ProjectSlide } from "@/components/slides/project-slide";
+import { ActivitySlide } from "@/components/slides/activity-slide";
+import { WorkStyleSlide } from "@/components/slides/work-style-slide";
+import { TimingSlide } from "@/components/slides/timing-slide";
+import { RemarksSlide } from "@/components/slides/remarks-slide";
+import { SummarySlide } from "@/components/slides/summary-slide";
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-space",
+});
+
 const SLIDES_CONFIG = [
-  { id: "intro", component: IntroSlide, themeId: "obsidian" },
-  { id: "stats", component: StatsSlide, themeId: "tokyo" },
-  { id: "languages", component: LanguageSlide, themeId: "emerald" },
-  { id: "projects", component: ProjectSlide, themeId: "sunset" },
-  { id: "activity", component: ActivitySlide, themeId: "abyss" },
-  { id: "workstyle", component: WorkStyleSlide, themeId: "gilded" },
-  { id: "timing", component: TimingSlide, themeId: "sunset" },
-  { id: "remarks", component: RemarksSlide, themeId: "obsidian" },
-  { id: "summary", component: SummarySlide, themeId: "emerald" },
+  { id: "intro", component: IntroSlide, themeId: "graphite" },
+  { id: "stats", component: StatsSlide, themeId: "terminal" },
+  { id: "languages", component: LanguageSlide, themeId: "ocean" },
+  { id: "productive-day", component: ProductiveDaySlide, themeId: "ember" },
+  { id: "fun-stats", component: FunStatsSlide, themeId: "dracula" },
+  { id: "projects", component: ProjectSlide, themeId: "midnight" },
+  { id: "activity", component: ActivitySlide, themeId: "forest" },
+  { id: "workstyle", component: WorkStyleSlide, themeId: "amethyst" },
+  { id: "timing", component: TimingSlide, themeId: "nebula" },
+  { id: "remarks", component: RemarksSlide, themeId: "cyber" },
+  { id: "summary", component: SummarySlide, themeId: "aurora" },
 ];
 
 export default function Home() {
@@ -42,27 +54,15 @@ export default function Home() {
   const [slideIndex, setSlideIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Fonts loader
-  useEffect(() => {
-    const link = document.createElement("link");
-    link.href =
-      "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700;900&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, []);
+  const slideContainerRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = async (username: string, token: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      // 1. Get Data from GitHub
       const gitData = await fetchGitHubData(username, token);
 
-      // 2. Get AI Analysis from our Next.js API Route
       const aiResponse = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -81,14 +81,17 @@ export default function Home() {
       setData({ ...gitData, analysis });
       setSlideIndex(0);
       setView("story");
-    } catch (err: any) {
-      setError(err.message || "Failed to load data");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Auto-advance logic
   useEffect(() => {
     if (view !== "story" || isPaused || slideIndex >= SLIDES_CONFIG.length - 1)
       return;
@@ -96,14 +99,25 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, [slideIndex, view, isPaused]);
 
-  // Render
+  useGSAP(() => {
+    if (view === "story" && slideContainerRef.current) {
+      gsap.fromTo(
+        slideContainerRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.5, ease: "power2.out" },
+      );
+    }
+  }, [slideIndex, view]);
+
   if (view === "login" || !data) {
     return (
-      <LoginScreen
-        onGenerate={handleGenerate}
-        loading={loading}
-        error={error}
-      />
+      <main className={`${spaceGrotesk.variable} font-sans`}>
+        <LoginScreen
+          onGenerate={handleGenerate}
+          loading={loading}
+          error={error}
+        />
+      </main>
     );
   }
 
@@ -112,91 +126,13 @@ export default function Home() {
     THEMES.find((t) => t.id === SLIDES_CONFIG[slideIndex].themeId) || THEMES[0];
 
   return (
-    <div
-      className={`fixed inset-0 overflow-hidden font-space transition-colors duration-1000 ease-in-out ${currentTheme.bg}`}
+    <main
+      className={`fixed inset-0 overflow-hidden ${spaceGrotesk.variable} font-sans transition-colors duration-1000 ease-in-out ${currentTheme.bg}`}
       onMouseDown={() => setIsPaused(true)}
       onMouseUp={() => setIsPaused(false)}
       onTouchStart={() => setIsPaused(true)}
       onTouchEnd={() => setIsPaused(false)}
     >
-      <style jsx global>{`
-        .font-space {
-          font-family: "Space Grotesk", sans-serif;
-        }
-        @keyframes fade-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes slide-right {
-          from {
-            opacity: 0;
-            transform: translateX(-30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 0.4;
-          }
-          50% {
-            opacity: 0.6;
-          }
-        }
-        .animate-fade-up {
-          animation: fade-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-          opacity: 0;
-        }
-        .animate-slide-right {
-          animation: slide-right 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-          opacity: 0;
-        }
-        .animate-slide-up {
-          animation: slide-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-          opacity: 0;
-        }
-        .animate-float {
-          animation: float 4s ease-in-out infinite;
-        }
-        .animate-pulse-slow {
-          animation: pulse-slow 5s infinite ease-in-out;
-        }
-        .delay-100 {
-          animation-delay: 100ms;
-        }
-        .delay-200 {
-          animation-delay: 200ms;
-        }
-      `}</style>
-
       <Background theme={currentTheme} />
 
       <ProgressBar
@@ -205,32 +141,62 @@ export default function Home() {
         active={!isPaused}
       />
 
-      {/* Pause Button */}
       <button
+        type="button"
+        aria-label={isPaused ? "Play" : "Pause"}
         onClick={(e) => {
           e.stopPropagation();
           setIsPaused(!isPaused);
         }}
-        className="absolute top-8 right-6 z-50 p-2 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all text-white border border-white/10"
+        onMouseDown={(e) => e.stopPropagation()}
+        onMouseUp={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        className="absolute top-8 right-6 z-50 p-2 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all text-white border border-white/10 cursor-pointer"
       >
         {isPaused ? <PlayCircle size={20} /> : <PauseCircle size={20} />}
       </button>
 
-      {/* Navigation Touch Areas */}
+      {/* Prev Slide Touch Area */}
       <div
-        className="absolute inset-y-0 left-0 w-1/3 z-40"
-        onClick={() => slideIndex > 0 && setSlideIndex((i) => i - 1)}
+        role="button"
+        tabIndex={0}
+        aria-label="Previous Slide"
+        className="absolute inset-y-0 left-0 w-1/3 z-40 outline-none"
+        onClick={() => {
+          if (slideIndex > 0) setSlideIndex((i) => i - 1);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            if (slideIndex > 0) setSlideIndex((i) => i - 1);
+          }
+        }}
       />
+
+      {/* Next Slide Touch Area */}
       <div
-        className="absolute inset-y-0 right-0 w-1/3 z-40"
-        onClick={() =>
-          slideIndex < SLIDES_CONFIG.length - 1 && setSlideIndex((i) => i + 1)
-        }
+        role="button"
+        tabIndex={0}
+        aria-label="Next Slide"
+        className="absolute inset-y-0 right-0 w-1/3 z-40 outline-none"
+        onClick={() => {
+          if (slideIndex < SLIDES_CONFIG.length - 1)
+            setSlideIndex((i) => i + 1);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            if (slideIndex < SLIDES_CONFIG.length - 1)
+              setSlideIndex((i) => i + 1);
+          }
+        }}
       />
 
       <div className="h-full w-full max-w-md mx-auto relative z-30 pointer-events-none flex items-center justify-center">
         <div
-          className={`h-full w-full ${slideIndex === SLIDES_CONFIG.length - 1 ? "pointer-events-auto" : ""}`}
+          ref={slideContainerRef}
+          className={`h-full w-full ${
+            slideIndex === SLIDES_CONFIG.length - 1 ? "pointer-events-auto" : ""
+          }`}
         >
           <CurrentSlide
             data={data}
@@ -239,6 +205,6 @@ export default function Home() {
           />
         </div>
       </div>
-    </div>
+    </main>
   );
 }
