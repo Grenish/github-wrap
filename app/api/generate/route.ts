@@ -41,7 +41,7 @@ Stats:
 Create a fun persona with:
 - A punchy 2–3 word RPG title (e.g. "Commit Crusader", "Bug-Slaying Berserker")
 - A witty, sarcastic, or hyping remark about their habits
-- Discipline rank: S (god-tier), A (strong), B (decent), C (rarely seen)
+- Discipline rank: S (god-tier), A (strong), B (decent), C (rarely seen), D (are you for real?), E (coding is not your thing)
 - One-word vibe
 
 Respond with clean JSON only.
