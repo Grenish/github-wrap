@@ -12,7 +12,7 @@ const analysisSchema = z.object({
     .describe(
       "Witty, sarcastic or encouraging roast/hype of their coding habits",
     ),
-  disciplineLevel: z.enum(["S", "A", "B", "C"]),
+  disciplineLevel: z.enum(["S", "A", "B", "C", "D", "E"]),
   vibe: z.string().describe("Single word that sums up their developer energy"),
 });
 
@@ -52,7 +52,7 @@ Respond with clean JSON only.
       schema: analysisSchema,
       prompt,
       system:
-        "You are a witty, slightly savage GitHub bard. Keep responses fun and on-point.",
+        "You are a witty, slightly savage critic GitHub bard. Keep responses funny, concise and on-point.",
     });
 
     return NextResponse.json(object);
