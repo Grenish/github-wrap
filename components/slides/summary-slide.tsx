@@ -6,6 +6,7 @@ import { formatNumber } from "@/lib/constants";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { Github, Zap, Share2, Download } from "lucide-react";
+import { snapdom } from "@zumer/snapdom";
 
 interface SummarySlideProps {
   data: WrappedData;
@@ -49,8 +50,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
           "-=0.8",
         );
 
-      // --- 3. BUTTONS SLIDE UP (Fixed) ---
-      // Using fromTo ensures they definitely end up at opacity 1
+      // --- 3. BUTTONS SLIDE UP ---
       tl.fromTo(
         ".action-btn",
         {
@@ -125,19 +125,24 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
   return (
     <div
       ref={container}
+      // FIX 1: Move mouse handlers to the parent container
+      // This ensures the tilt works even if you hover over the buttons
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       className="h-full flex flex-col items-center justify-center p-4 md:p-6 space-y-6 w-full relative z-10 perspective-1000"
     >
       {/* 3D TILT CONTAINER */}
       <div
         id="summary-card"
         ref={cardRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        className={`w-full max-w-[340px] md:max-w-sm rounded-[2.5rem] border-4 ${theme.border} p-1 shadow-2xl relative bg-[#0a0a0a] cursor-default z-10`}
+        // FIX 2: Remove handlers from here
+        // FIX 3: Add pointer-events-none so the invisible bounding box doesn't block clicks
+        className={`w-full max-w-[340px] md:max-w-sm rounded-[2.5rem] border-4 ${theme.border} p-1 shadow-2xl relative bg-[#0a0a0a] cursor-default z-10 pointer-events-none`}
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* INNER CONTAINER */}
-        <div className="relative rounded-[2.2rem] overflow-hidden bg-[#0a0a0a] p-6 md:p-7 h-full">
+        {/* FIX 4: Add pointer-events-auto so text inside is still selectable */}
+        <div className="relative rounded-[2.2rem] overflow-hidden bg-[#0a0a0a] p-6 md:p-7 h-full pointer-events-auto">
           {/* Background Texture */}
           <div
             className="absolute inset-0 opacity-20 pointer-events-none z-0 mix-blend-overlay"
@@ -242,19 +247,36 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
         </div>
       </div>
 
-      {/* ACTION BUTTONS (Z-Index increased to sit above everything) */}
-      <div className="flex gap-3 w-full max-w-[340px] md:max-w-sm relative z-50">
+      {/* ACTION BUTTONS */}
+      <div
+        className="flex gap-3 w-full max-w-[340px] md:max-w-sm relative z-50 pointer-events-none"
+        // FIX 5: Lift buttons slightly in Z space to be visually safe
+        style={{ transform: "translateZ(20px)" }}
+      >
         <button
           onClick={onRestart}
-          className="action-btn flex-1 bg-white text-black py-3.5 rounded-2xl font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 group cursor-pointer"
+          className="action-btn flex-1 bg-white text-black py-3.5 rounded-2xl font-bold hover:scale-[1.02] active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 group cursor-pointer pointer-events-auto"
         >
           <Zap size={18} className="group-hover:fill-black transition-colors" />
           Replay
         </button>
 
         <button
-          className="action-btn flex-1 bg-black/50 backdrop-blur-md text-white border border-white/10 py-3.5 rounded-2xl font-bold hover:bg-white/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer"
-          onClick={() => alert("Image generation logic here!")}
+          className="action-btn flex-1 bg-black/50 backdrop-blur-md text-white border border-white/10 py-3.5 rounded-2xl font-bold hover:bg-white/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer pointer-events-auto"
+          onClick={async () => {
+            if (!cardRef.current) return;
+            const rect = cardRef.current.getBoundingClientRect();
+            await snapdom.download(cardRef.current, {
+              filename: `${data.user.login}-github-wrapped-25`,
+              quality: 1,
+              scale: 2,
+              width: rect.width * 2,
+              height: rect.height * 2,
+              embedFonts: true,
+              backgroundColor: "#0a0a0a",
+              dpr: window.devicePixelRatio,
+            });
+          }}
         >
           <Download
             size={18}
@@ -264,8 +286,14 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
         </button>
 
         <button
-          className="action-btn w-14 bg-black/50 backdrop-blur-md text-white border border-white/10 rounded-2xl font-bold hover:bg-white/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center cursor-pointer"
-          onClick={() => alert("Share logic here!")}
+          className="action-btn w-14 bg-black/50 backdrop-blur-md text-white border border-white/10 rounded-2xl font-bold hover:bg-white/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center cursor-pointer pointer-events-auto"
+          onClick={() => {
+            const message = `Check out my GitHub Wrapped 2025! "${data.analysis.title}" by ${data.user.login} #GitHubWrapped https://github-wrap25.vercel.app`;
+            window.open(
+              `https://x.com/intent/tweet?text=${encodeURIComponent(message)}`,
+              "_blank",
+            );
+          }}
         >
           <Share2 size={18} />
         </button>
