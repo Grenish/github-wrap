@@ -8,7 +8,6 @@ import gsap from "gsap";
 
 import { THEMES } from "@/lib/constants";
 import { WrappedData } from "@/lib/types";
-import { fetchGitHubData } from "@/lib/github";
 
 import { Background } from "@/components/background";
 import { ProgressBar } from "@/components/progress-bar";
@@ -56,12 +55,23 @@ export default function Home() {
 
   const slideContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleGenerate = async (username: string, token: string) => {
+  const handleGenerate = async (username: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      const gitData = await fetchGitHubData(username, token);
+      const gitRes = await fetch("/api/github-data", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+
+      if (!gitRes.ok) {
+        const errData = await gitRes.json();
+        throw new Error(errData.error || "Failed to fetch GitHub data");
+      }
+
+      const gitData = await gitRes.json();
 
       const aiResponse = await fetch("/api/generate", {
         method: "POST",
