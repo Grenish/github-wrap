@@ -203,7 +203,8 @@ export const fetchGitHubData = async (
   username: string,
   token: string,
 ): Promise<Omit<WrappedData, "analysis">> => {
-  const headers: HeadersInit = token ? { Authorization: `token ${token}` } : {};
+  const pat = token || process.env.GITHUB_PAT_KEY || "";
+  const headers: HeadersInit = pat ? { Authorization: `token ${pat}` } : {};
 
   const userRes = await fetch(`https://api.github.com/users/${username}`, {
     headers,
@@ -226,7 +227,7 @@ export const fetchGitHubData = async (
   const endNow = now.toISOString();
 
   try {
-    if (token) {
+    if (pat) {
       const query = `
         query($login: String!, $from: DateTime!, $to: DateTime!) {
           user(login: $login) {
@@ -322,7 +323,7 @@ export const fetchGitHubData = async (
         );
 
         timing = analyzeTiming(activityDates);
-        codeStats = await fetchCodeStats(username, activeReposForStats, token);
+        codeStats = await fetchCodeStats(username, activeReposForStats, pat);
       }
     } else {
       const reposRes = await fetch(
@@ -389,7 +390,7 @@ export const fetchGitHubData = async (
         heatmap = generateMockHeatmapFromDates(eventDates);
       }
 
-      codeStats = await fetchCodeStats(username, activeReposForStats, token);
+      codeStats = await fetchCodeStats(username, activeReposForStats, pat);
     }
 
     if (heatmap.length > 0) {
