@@ -1,21 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  BadgeInfo,
-  CircleHelp,
-  Github,
-  Key,
-  UserIcon,
-  Loader2,
-  AlertCircle,
-} from "lucide-react";
+import { Github, UserIcon, Loader2, AlertCircle } from "lucide-react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { TextPlugin } from "gsap/TextPlugin";
@@ -35,7 +21,7 @@ CustomEase.create(
 );
 
 interface LoginScreenProps {
-  onGenerate: (username: string, token: string) => void;
+  onGenerate: (username: string) => void;
   loading: boolean;
   error: string | null;
 }
@@ -49,13 +35,12 @@ export const LoginScreen = ({
 
   // State for inputs
   const [username, setUsername] = useState("");
-  const [token, setToken] = useState("");
 
   // Handle Form Submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (username.trim()) {
-      onGenerate(username, token);
+      onGenerate(username);
     }
   };
 
@@ -86,7 +71,6 @@ export const LoginScreen = ({
       gsap.set(chars, { opacity: 0 });
       gsap.set(yearSplit, { opacity: 0 });
       gsap.set(".input-anim", { opacity: 0, rotateX: -90 });
-      gsap.set(".info-anim", { opacity: 0, y: 10 });
       gsap.set(".btn-anim", { scale: 0, opacity: 0 });
       gsap.set(".error-anim", { opacity: 0, y: -10 });
 
@@ -257,13 +241,6 @@ export const LoginScreen = ({
       );
 
       tl.fromTo(
-        ".info-anim",
-        { opacity: 0, y: 15 },
-        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
-        "-=0.2",
-      );
-
-      tl.fromTo(
         ".btn-anim",
         { scale: 0, opacity: 0 },
         { scale: 1, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.6)" },
@@ -331,47 +308,6 @@ export const LoginScreen = ({
             placeholder="Username"
             className="text-white outline-none text-lg md:text-xl w-full bg-transparent placeholder:text-white/40"
           />
-        </div>
-
-        <div className="input-anim flex items-center justify-between mt-4">
-          <h2 className="font-semibold text-white leading-none tracking-tighter text-sm md:text-base">
-            Access Token
-          </h2>
-          <TooltipProvider>
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <div className="cursor-help">
-                  <CircleHelp
-                    className="text-white/70 hover:text-white transition-colors"
-                    size={15}
-                  />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-sm w-full text-balance text-center bg-zinc-900 border-zinc-800 text-zinc-300">
-                This is optional, but using a PAT unlocks private stats and
-                heatmap accuracy.
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-
-        <div className="input-anim flex items-center border-gray-700 border p-2.5 md:p-3 gap-2 rounded-xl mt-1 bg-black focus-within:border-white/50 transition-colors">
-          <Key className="text-white/70 w-5 h-5 md:w-6 md:h-6" />
-          <input
-            type="password"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            placeholder="ghp_••••"
-            className="text-white outline-none text-lg md:text-xl w-full bg-transparent placeholder:text-white/40"
-          />
-        </div>
-
-        {/* Info Section */}
-        <div className="info-anim flex items-center gap-1 mt-3 opacity-0">
-          <BadgeInfo className="text-white/50" size={20} />
-          <p className="text-xs text-white/50 leading-none tracking-tight">
-            Don&apos;t worry, we won&apos;t save your PAT anywhere.
-          </p>
         </div>
 
         {/* Error Message */}
