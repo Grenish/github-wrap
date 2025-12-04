@@ -27,7 +27,6 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
     () => {
       const tl = gsap.timeline();
 
-      // --- 1. CARD ENTRANCE ---
       tl.from(cardRef.current, {
         scale: 0,
         rotationY: 180,
@@ -37,7 +36,6 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
         ease: "elastic.out(1, 0.7)",
       })
 
-        // --- 2. CONTENT STAGGER ---
         .from(
           ".summary-item",
           {
@@ -50,7 +48,6 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
           "-=0.8",
         );
 
-      // --- 3. BUTTONS SLIDE UP ---
       tl.fromTo(
         ".action-btn",
         {
@@ -69,7 +66,6 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
         "-=0.4",
       );
 
-      // --- 4. SHINE EFFECT ---
       if (glowRef.current) {
         gsap.to(glowRef.current, {
           backgroundPosition: "200% 0",
@@ -81,7 +77,6 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
     { scope: container },
   );
 
-  // --- MOUSE TILT LOGIC ---
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
@@ -125,25 +120,17 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
   return (
     <div
       ref={container}
-      // FIX 1: Move mouse handlers to the parent container
-      // This ensures the tilt works even if you hover over the buttons
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       className="h-full flex flex-col items-center justify-center p-4 md:p-6 space-y-6 w-full relative z-10 perspective-1000"
     >
-      {/* 3D TILT CONTAINER */}
       <div
         id="summary-card"
         ref={cardRef}
-        // FIX 2: Remove handlers from here
-        // FIX 3: Add pointer-events-none so the invisible bounding box doesn't block clicks
-        className={`w-full max-w-[340px] md:max-w-sm rounded-[2.5rem] border-4 ${theme.border} p-1 shadow-2xl relative bg-[#0a0a0a] cursor-default z-10 pointer-events-none`}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className={`w-full max-w-[340px] md:max-w-sm rounded-[2.5rem] border-4 ${theme.border} p-1 shadow-2xl relative bg-[#0a0a0a] cursor-default z-10`}
         style={{ transformStyle: "preserve-3d" }}
       >
-        {/* INNER CONTAINER */}
-        {/* FIX 4: Add pointer-events-auto so text inside is still selectable */}
         <div className="relative rounded-[2.2rem] overflow-hidden bg-[#0a0a0a] p-6 md:p-7 h-full pointer-events-auto">
-          {/* Background Texture */}
           <div
             className="absolute inset-0 opacity-20 pointer-events-none z-0 mix-blend-overlay"
             style={{
@@ -151,7 +138,6 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
             }}
           ></div>
 
-          {/* Ambient Blobs */}
           <div
             className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] opacity-30 ${theme.blob1} -translate-y-1/2 translate-x-1/2 pointer-events-none`}
           />
@@ -159,15 +145,11 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
             className={`absolute bottom-0 left-0 w-64 h-64 rounded-full blur-[80px] opacity-30 ${theme.blob2} translate-y-1/2 -translate-x-1/2 pointer-events-none`}
           />
 
-          {/* Holographic Glow Layer */}
           <div
             ref={glowRef}
             className="absolute inset-0 z-20 pointer-events-none mix-blend-overlay"
           />
 
-          {/* --- CARD CONTENT --- */}
-
-          {/* User Header */}
           <div className="summary-item flex items-center gap-4 mb-6 relative z-10">
             <div className="relative shrink-0">
               <div
@@ -191,7 +173,6 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
             </div>
           </div>
 
-          {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-2.5 mb-6 relative z-10">
             <div className="summary-item p-3.5 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm group hover:bg-white/10 transition-colors">
               <div className="text-lg md:text-xl font-bold text-white tabular-nums">
@@ -227,14 +208,12 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
             </div>
           </div>
 
-          {/* Verdict */}
           <div className="summary-item p-3.5 rounded-2xl border border-white/10 bg-linear-to-br from-white/10 to-transparent mb-4 relative z-10">
             <p className="text-zinc-300 text-xs leading-relaxed italic text-center">
               &quot;{data.analysis.remarks}&quot;
             </p>
           </div>
 
-          {/* Footer */}
           <div className="summary-item flex justify-between items-end border-t border-white/10 pt-3 relative z-10">
             <div className="text-zinc-600 text-[9px] font-bold uppercase tracking-widest flex items-center gap-1">
               <Github size={10} />
@@ -247,10 +226,8 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
         </div>
       </div>
 
-      {/* ACTION BUTTONS */}
       <div
         className="flex gap-3 w-full max-w-[340px] md:max-w-sm relative z-50 pointer-events-none"
-        // FIX 5: Lift buttons slightly in Z space to be visually safe
         style={{ transform: "translateZ(20px)" }}
       >
         <button
@@ -265,6 +242,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({
           className="action-btn flex-1 bg-black/50 backdrop-blur-md text-white border border-white/10 py-3.5 rounded-2xl font-bold hover:bg-white/10 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group cursor-pointer pointer-events-auto"
           onClick={async () => {
             if (!cardRef.current) return;
+            gsap.set(cardRef.current, { rotateX: 0, rotateY: 0 });
             const rect = cardRef.current.getBoundingClientRect();
             await snapdom.download(cardRef.current, {
               filename: `${data.user.login}-github-wrapped-25`,
